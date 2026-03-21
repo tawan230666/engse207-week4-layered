@@ -1,0 +1,92 @@
+﻿openapi: 3.0.0
+info:
+title: Task Board - Team Chat API
+version: 1.0.0
+description: REST API and WebSocket events for Team Chat feature
+paths:
+/api/boards/{boardId}/messages:
+get:
+summary: Get chat history for a specific board
+parameters:
+- name: boardId
+in: path
+required: true
+schema:
+type: string
+- name: limit
+in: query
+schema:
+type: integer
+default: 50
+- name: offset
+in: query
+schema:
+type: integer
+default: 0
+responses:
+'200':
+description: A list of messages
+post:
+summary: Send a message via REST (Fallback or for File Attachments)
+parameters:
+- name: boardId
+in: path
+required: true
+schema:
+type: string
+requestBody:
+required: true
+content:
+application/json:
+schema:
+type: object
+properties:
+senderId: { type: string }
+text: { type: string }
+fileUrl: { type: string }
+responses:
+'201':
+description: Message created successfully
+/api/boards/{boardId}/messages/{messageId}:
+get:
+summary: Get details of a specific message
+parameters:
+- name: boardId
+in: path
+required: true
+schema: { type: string }
+- name: messageId
+in: path
+required: true
+schema: { type: string }
+responses:
+'200':
+description: Message details
+delete:
+summary: Delete a specific message
+parameters:
+- name: boardId
+in: path
+required: true
+schema: { type: string }
+- name: messageId
+in: path
+required: true
+schema: { type: string }
+responses:
+'204':
+description: Message deleted successfully
+
+components:
+schemas:
+WebSocketEvents:
+description: "WebSocket Events definitions"
+properties:
+join_room:
+description: "Client emits to join a board's chat room. Payload: { boardId, userId }"
+leave_room:
+description: "Client emits to leave a room. Payload: { boardId, userId }"
+send_message:
+description: "Client emits to send a message. Payload: { boardId, text, senderId }"
+message_received:
+description: "Server emits when a new message arrives. Payload: { messageId, text, senderId, timestamp }"
