@@ -1,63 +1,58 @@
-# 📦 Week4 Layered Project
+# Task Board — Layered Architecture
 
-โปรเจกต์นี้เป็นส่วนหนึ่งของการเรียนรู้เกี่ยวกับ **Layered Architecture** ในสัปดาห์ที่ 4  
-โดยเน้นการออกแบบโครงสร้างโปรแกรมแบบแยกเป็นชั้น (Layers) เพื่อให้ง่ายต่อการพัฒนาและดูแลรักษา
+**A task-management API refactored from a single-file monolith into clean layers (presentation → business logic → data access), plus a microservices design proposal for a real-time Team Chat feature.**
 
----
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![OpenAPI](https://img.shields.io/badge/OpenAPI-6BA539?logo=openapiinitiative&logoColor=white)
 
-## 📌 รายละเอียดโปรเจกต์
-โปรเจกต์นี้ออกแบบโดยใช้แนวคิด Layered Architecture ซึ่งแบ่งระบบออกเป็นหลายชั้น เช่น
+> **ENGSE207 Software Architecture, Week 4 (team).** Team: นายเบญจศรายุทธ น้อยอุบล, นายชนสรณ์ บุตรถา, นายธาวัน ทิพคุณ, นายอติโรจน์ กุหลั่น.
+> First step of a series: **layered** → [N-tier](https://github.com/tawan230666/engse207-task-board) → [load-balanced + Redis](https://github.com/tawan230666/Week6_lab_ntier_redis_loadbalance) → [event-driven](https://github.com/tawan230666/week7_lab_event_driven_rabbitmq) → [secured microservices](https://github.com/tawan230666/engse207-termproject-jwt-microservices).
 
-- Presentation Layer (ส่วนแสดงผล)
-- Business Logic Layer (ตรรกะการทำงาน)
-- Data Access Layer (การเข้าถึงข้อมูล)
+## Layers
 
-เพื่อให้โค้ดมีความเป็นระเบียบ แก้ไขง่าย และสามารถพัฒนาต่อได้ในอนาคต
-
----
-
-## 👥 สมาชิกในทีม
-- นายเบญจศรายุทธ น้อยอุบล  
-- นายชนสรณ์ บุตรถา  
-- นายธาวัน ทิพคุณ  
-- นายอดิโรจน์ กุหลั่น  
-
----
-
-## 🚀 วิธีใช้งาน
-
-### 1. Clone โปรเจกต์
-```bash
-git clone https://github.com/Benjasarayut/week4-layered.git
+```mermaid
+flowchart TD
+    C["Presentation<br/>src/controllers · middleware (validation, errors)"] --> S["Business logic<br/>src/services · src/models"]
+    S --> R["Data access<br/>src/repositories"]
+    R --> DB[("SQLite<br/>database/schema.sql")]
 ```
 
-### 2. เข้าไปที่โฟลเดอร์โปรเจกต์
-```bash
-cd week4-layered
-```
+Each layer only talks to the one directly below it:
 
-### 3. ติดตั้งและรันโปรแกรม
+- **Controllers** translate HTTP requests and responses, and contain no business rules.
+- **Services** enforce business rules: high-priority tasks must have a description, and a task marked `DONE` can't go back to `TODO`.
+- **Repositories** are the only code that writes SQL.
+
+Validation and error handling are centralised in middleware, so every endpoint returns consistent error responses.
+
+## Run it
+
 ```bash
-# ตัวอย่าง (ปรับตามภาษา/เฟรมเวิร์กที่ใช้)
+git clone https://github.com/tawan230666/engse207-week4-layered.git
+cd engse207-week4-layered
 npm install
-npm start
+npm start                 # http://localhost:8080  (npm run dev for auto-reload)
 ```
 
----
+The SQLite database is created automatically on first start. The web UI is served from `/`, and `api.http` has ready-made requests for VS Code REST Client.
 
-## 🛠️ เทคโนโลยีที่ใช้
-- (ระบุเพิ่มเติมได้ตามจริง)
-- Node.js / Java / Python
-- Express / Spring / Django
+| Method | Endpoint |
+|---|---|
+| `GET` | `/api/health` |
+| `GET` | `/api/tasks`, `/api/tasks/:id` |
+| `POST` | `/api/tasks` |
+| `PUT` / `DELETE` | `/api/tasks/:id` |
 
----
+## Design homework: Team Chat microservices
 
-## 📖 สิ่งที่ได้เรียนรู้
-- การออกแบบระบบแบบ Layered Architecture
-- การแยกความรับผิดชอบของแต่ละส่วน (Separation of Concerns)
-- การทำงานร่วมกันผ่าน GitHub
+[`docs/team-chat-design/`](docs/team-chat-design) proposes extending the task board with real-time team chat as microservices:
 
----
-
-## 📎 Repository
-https://github.com/Benjasarayut/week4-layered.git
+| Document | Contents |
+|---|---|
+| `service_design.md` | Service boundaries and responsibilities |
+| `architecture_diagram.md` | System architecture |
+| `event_flow_diagram.md` | Event flow between services |
+| `api_design.yaml` | OpenAPI specification |
+| `challenges_solutions.md` | Trade-offs and how to handle them |
